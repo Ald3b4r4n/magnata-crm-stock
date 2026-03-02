@@ -98,25 +98,25 @@ export default function EstoquePage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="p-10 max-w-7xl mx-auto"
+      className="max-w-7xl mx-auto"
     >
-      <header className="flex items-center justify-between mb-12">
+      <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-4xl font-light tracking-tight text-white mb-2">Gestão de <span className="font-semibold text-amber-500">Estoque</span></h1>
           <p className="text-zinc-400">Controle rigoroso de lotes e volumetria das ampolas de Tirzepatida aprovadas.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
             <Button onClick={exportarEstoqueCSV} variant="outline" className="h-9 text-xs border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300">
-               <Download className="w-3 h-3 mr-2 text-zinc-400" /> Baixar Planilha (CSV)
+               <Download className="w-3 h-3 mr-2 text-zinc-400" /> CSV
             </Button>
             <Button onClick={exportarEstoquePDF} variant="outline" className="h-9 text-xs border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500">
-               <Download className="w-3 h-3 mr-2" /> Emitir PDF (Físico)
+               <Download className="w-3 h-3 mr-2" /> PDF
             </Button>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20 ml-2">
-                  <Plus className="w-4 h-4 mr-2" /> Nova Entrada
+                <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20">
+                  <Plus className="w-4 h-4 mr-2" /> Entrada
                 </Button>
               </DialogTrigger>
              <DialogContent className="bg-zinc-950 border-white/10 text-white sm:max-w-[425px]">
@@ -169,7 +169,8 @@ export default function EstoquePage() {
 
       {/* Lista de Ativos */}
       <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
-        <Table>
+        <div className="overflow-x-auto min-w-full">
+          <Table>
           <TableHeader className="bg-black/40">
             <TableRow className="border-white/5 hover:bg-transparent">
               <TableHead className="text-zinc-400 font-medium h-12">Lote & Marca</TableHead>
@@ -234,6 +235,7 @@ export default function EstoquePage() {
           </TableBody>
         </Table>
       </div>
-    </motion.div>
+    </div>
+  </motion.div>
   );
 }

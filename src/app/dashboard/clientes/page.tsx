@@ -203,7 +203,7 @@ export default function ClientesPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="p-10 max-w-7xl mx-auto">
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="max-w-7xl mx-auto">
       <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-4xl font-light tracking-tight text-white mb-2">Relacionamento e <span className="font-semibold text-amber-500">Vendas</span></h1>
@@ -268,7 +268,8 @@ export default function ClientesPage() {
           </div>
 
           <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
-            <Table>
+            <div className="overflow-x-auto">
+              <Table>
               <TableHeader className="bg-black/40">
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="text-zinc-400 font-medium h-12">Perfil do Cliente</TableHead>
@@ -307,19 +308,20 @@ export default function ClientesPage() {
               </TableBody>
             </Table>
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
       )}
 
       {/* VIEW: HISTÓRICO DE VENDAS */}
       {activeTab === 'vendas' && (
         <motion.div initial={{opacity:0, scale:0.98}} animate={{opacity:1, scale:1}} transition={{duration:0.3}}>
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div className="flex flex-wrap gap-2">
                <Button onClick={exportarVendasCSV} variant="outline" className="h-9 text-xs border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300">
-                 <Download className="w-3 h-3 mr-2 text-zinc-400" /> Exportar Vendas (CSV)
+                 <Download className="w-3 h-3 mr-2 text-zinc-400" /> Exportar CSV
                </Button>
                <Button onClick={exportarVendasPDF} variant="outline" className="h-9 text-xs border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500">
-                 <Download className="w-3 h-3 mr-2" /> Emitir PDF Analítico
+                 <Download className="w-3 h-3 mr-2" /> Gerar PDF
                </Button>
             </div>
 
@@ -425,7 +427,8 @@ export default function ClientesPage() {
           </div>
 
           <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
-            <Table>
+            <div className="overflow-x-auto">
+              <Table>
               <TableHeader className="bg-black/40">
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="text-zinc-400 font-medium h-12">Comprador Fixado</TableHead>
@@ -506,7 +509,8 @@ export default function ClientesPage() {
               </TableBody>
             </Table>
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
       )}
     </motion.div>
   );

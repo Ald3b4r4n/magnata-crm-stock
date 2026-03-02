@@ -116,18 +116,18 @@ export default function DashboardBI() {
   };
 
   return (
-    <div className="p-10 max-w-7xl mx-auto">
-      <header className="mb-12 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto">
+      <header className="mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-light tracking-tight text-white mb-2">Business Intelligence <span className="font-semibold text-amber-500">Global</span></h1>
           <p className="text-zinc-400">Acompanhamento consolidado de ativos, lucros de Tirzepatida e saúde financeira em <strong className="text-amber-500">Tempo Real</strong>.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
            <Button onClick={exportarBICsv} variant="outline" className="h-9 text-xs border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300">
-              <Download className="w-3 h-3 mr-2 text-zinc-400" /> Exportar Dados (CSV)
+              <Download className="w-3 h-3 mr-2 text-zinc-400" /> CSV
            </Button>
            <Button onClick={exportarBIPdf} variant="outline" className="h-9 text-xs border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500">
-              <Download className="w-3 h-3 mr-2" /> Emitir PDF Analítico
+              <Download className="w-3 h-3 mr-2" /> PDF
            </Button>
         </div>
       </header>
