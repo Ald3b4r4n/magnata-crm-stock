@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💉 Magnata CRM & Stock
 
-## Getting Started
+Sistema de alta performance para gestão de estoque e relacionamento com clientes focado no mercado de Tirzepatida. Desenvolvido com uma interface premium, dark mode nativo e Business Intelligence em tempo real.
 
-First, run the development server:
+![Preview do Dashboard](https://raw.githubusercontent.com/username/repo/main/public/preview.png) *(Substituir pelo link real após o push)*
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Funcionalidades Principais
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **📊 Dashboard BI Global**: Acompanhamento de Faturamento Bruto, Lucro Real e Giro de Estoque com gráficos interativos.
+- **📦 Gestão de Estoque**: Controle rigoroso de Lotes, Marcas, Volumetria e Posição Física das Ampolas.
+- **👥 CRM Transacional**: Base de clientes desatrelada com histórico completo de vendas/compras por indivíduo.
+- **💰 Controle Financeiro**: Gestão de parcelamento, status de pagamento (Pendente/Pago/Atrasado) e persistência de custo de aquisição histórico.
+- **📄 Relatórios Inteligentes**: Exportação de dados em CSV (otimizado para Excel) e PDF (Relatório Analítico) com layout premium.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Stack Tecnológica
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js 14 (App Router)](https://nextjs.org/)
+- **Linguagem**: [TypeScript](https://www.typescriptlang.org/)
+- **Banco de Dados & Auth**: [Firebase (Firestore)](https://firebase.google.com/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
+- **Animações**: [Framer Motion](https://www.framer.com/motion/)
+- **Gráficos**: [Recharts](https://recharts.org/)
+- **PDF Core**: [jsPDF](https://github.com/parallax/jsPDF) + [AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable)
 
-## Learn More
+## 📦 Instalação e Uso
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clonar o repositório**:
+   ```bash
+   git clone https://github.com/seu-usuario/magnata-crm-stock.git
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Instalar dependências**:
+   ```bash
+   npm install
+   # ou
+   pnpm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Configurar variáveis de ambiente**:
+   Crie um arquivo `.env.local` na raiz e adicione suas credenciais do Firebase:
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=...
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+   NEXT_PUBLIC_FIREBASE_APP_ID=...
+   ```
 
-## Deploy on Vercel
+4. **Rodar em desenvolvimento**:
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Este projeto foi desenvolvido com foco em UX/UI de alto nível e precisão contábil.*
