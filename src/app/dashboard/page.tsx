@@ -39,7 +39,6 @@ export default function DashboardBI() {
   vendas.forEach(venda => {
     // Calculando custo dessa venda: Prioridade para o custo persistido no ato da venda
     // Se não houver (legado), busca no lote atual do estoque
-    // @ts-expect-error - Campo novo persistido no ato da venda
     const custoPersistido = venda.valorAquisicaoUnidade;
     let custoVenda = 0;
 
