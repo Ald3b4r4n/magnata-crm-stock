@@ -27,6 +27,17 @@ export default function DashboardBI() {
   // 1. Giro de Estoque
   const totalAmpolasAtivas = estoque.reduce((acc, item) => acc + item.emEstoque, 0);
   const ampolasCriticAS = estoque.filter(item => item.emEstoque > 0 && item.emEstoque <= 5).length;
+  
+  // Agrupando por marca as ampolas ativas
+  const estoquePorMarca = estoque.reduce((acc, item) => {
+    if (item.emEstoque > 0) {
+      if (!acc[item.marca]) {
+        acc[item.marca] = 0;
+      }
+      acc[item.marca] += item.emEstoque;
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
   // 2. Lucros Total (Geral)
   let lucroBrutoGeral = 0;
@@ -196,12 +207,22 @@ export default function DashboardBI() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2 mb-3">
                  <div className="text-2xl md:text-3xl font-bold text-white">{totalAmpolasAtivas}</div>
-                 <span className="text-xs md:text-sm font-medium text-zinc-500">ampolas ativas</span>
+                 <span className="text-xs md:text-sm font-medium text-zinc-500">ampolas totais ativas</span>
               </div>
+
+              <div className="space-y-1.5 mb-2">
+                {Object.entries(estoquePorMarca).map(([marca, qtd]) => (
+                  <div key={marca} className="flex justify-between items-center text-xs text-zinc-400 bg-white/5 px-2 py-1.5 rounded-md">
+                    <span className="font-medium text-zinc-300">{marca}</span>
+                    <span className="font-bold text-indigo-400">{qtd} un</span>
+                  </div>
+                ))}
+              </div>
+
               {ampolasCriticAS > 0 && (
-                <p className="text-[10px] md:text-xs text-indigo-400 mt-2 font-medium bg-indigo-500/10 inline-block px-2 py-1 rounded">
+                <p className="text-[10px] md:text-xs text-indigo-400 mt-3 font-medium bg-indigo-500/10 inline-block px-2 py-1 rounded w-full text-center">
                   {ampolasCriticAS} lote(s) em estágio crítico (≤ 5)
                 </p>
               )}
