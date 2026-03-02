@@ -234,11 +234,10 @@ export default function EstoquePage() {
               ))
             )}
           </TableBody>
-                </Table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    );
+        </Table>
+      </div>
+    </div>
+  </div>
+</motion.div>
+  );
 }
