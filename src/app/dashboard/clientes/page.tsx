@@ -204,22 +204,22 @@ export default function ClientesPage() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="max-w-7xl mx-auto">
-      <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-4xl font-light tracking-tight text-white mb-2">Relacionamento e <span className="font-semibold text-amber-500">Vendas</span></h1>
-          <p className="text-zinc-400">Gerencie sua carteira de clientes fixos e registre o histórico operacional de vendas vinculadas ao estoque.</p>
+      <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
+        <div className="max-w-full">
+          <h1 className="text-3xl md:text-4xl font-light tracking-tight text-white mb-2">Relacionamento e <span className="font-semibold text-amber-500">Vendas</span></h1>
+          <p className="text-sm md:text-base text-zinc-400">Gerencie sua carteira de clientes fixos e registre o histórico operacional de vendas vinculadas ao estoque.</p>
         </div>
         
-        <div className="flex gap-4 bg-zinc-900/50 p-1.5 rounded-lg border border-white/5">
+        <div className="flex w-full md:w-auto gap-2 bg-zinc-900/50 p-1 rounded-lg border border-white/5">
            <button 
              onClick={() => setActiveTab('carteira')}
-             className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${activeTab === 'carteira' ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}
+             className={`flex-1 md:flex-none px-4 py-2 rounded-md font-medium text-xs md:text-sm transition-all ${activeTab === 'carteira' ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'}`}
            >
              Carteira de Clientes
            </button>
            <button 
              onClick={() => setActiveTab('vendas')}
-             className={`px-4 py-2 rounded-md font-medium text-sm transition-all flex items-center gap-2 ${activeTab === 'vendas' ? 'bg-amber-600/20 text-amber-500 shadow-md border border-amber-500/20' : 'text-zinc-400 hover:text-amber-400/80 hover:bg-amber-500/5'}`}
+             className={`flex-1 md:flex-none px-4 py-2 rounded-md font-medium text-xs md:text-sm transition-all flex items-center justify-center gap-2 ${activeTab === 'vendas' ? 'bg-amber-600/20 text-amber-500 shadow-md border border-amber-500/20' : 'text-zinc-400 hover:text-amber-400/80 hover:bg-amber-500/5'}`}
            >
              Registro de Vendas
            </button>
@@ -229,19 +229,19 @@ export default function ClientesPage() {
       {/* VIEW: CARTEIRA DE CLIENTES */}
       {activeTab === 'carteira' && (
         <motion.div initial={{opacity:0, scale:0.98}} animate={{opacity:1, scale:1}} transition={{duration:0.3}}>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-6 gap-4">
             <div className="flex gap-2">
-               <Button onClick={exportarClientesCSV} variant="outline" className="h-9 text-xs border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300">
-                 <Download className="w-3 h-3 mr-2 text-zinc-400" /> Exportar CSV
+               <Button onClick={exportarClientesCSV} variant="outline" className="flex-1 sm:flex-none h-9 text-xs border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300">
+                 <Download className="w-3 h-3 mr-2 text-zinc-400" /> CSV
                </Button>
-               <Button onClick={exportarClientesPDF} variant="outline" className="h-9 text-xs border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500">
-                 <Download className="w-3 h-3 mr-2" /> Gerar PDF
+               <Button onClick={exportarClientesPDF} variant="outline" className="flex-1 sm:flex-none h-9 text-xs border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500">
+                 <Download className="w-3 h-3 mr-2" /> PDF
                </Button>
             </div>
             
             <Dialog open={isModalClienteOpen} onOpenChange={setIsModalClienteOpen}>
                <DialogTrigger asChild>
-                 <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20">
+                 <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20 w-full sm:w-auto">
                    <Plus className="w-4 h-4 mr-2" /> Cadastrar Cliente
                  </Button>
                </DialogTrigger>
@@ -267,49 +267,51 @@ export default function ClientesPage() {
              </Dialog>
           </div>
 
-          <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+          <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
             <div className="overflow-x-auto">
-              <Table>
-              <TableHeader className="bg-black/40">
-                <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="text-zinc-400 font-medium h-12">Perfil do Cliente</TableHead>
-                  <TableHead className="text-zinc-400 font-medium text-right">Comunicação</TableHead>
-                  <TableHead className="text-zinc-400 font-medium w-[80px] text-center">Gestão</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow className="border-white/5"><TableCell colSpan={3} className="h-32 text-center text-zinc-500">Carregando carteira...</TableCell></TableRow>
-                ) : clientes.length === 0 ? (
-                  <TableRow className="border-white/5"><TableCell colSpan={3} className="h-48 text-center text-zinc-500"><Users className="w-10 h-10 mx-auto mb-3 opacity-20" />Nenhum cliente fixo cadastrado.</TableCell></TableRow>
-                ) : (
-                  clientes.map((item) => (
-                    <TableRow key={item.id} className="border-white/5 hover:bg-white-[0.02] transition-colors group">
-                      <TableCell className="font-medium align-middle">
-                        <div className="text-white font-semibold">{item.nome}</div>
-                        <div className="text-xs text-zinc-500 font-mono mt-0.5">{item.telefone}</div>
-                        {item.createdAt?.toDate && (
-                           <div className="text-[10px] text-zinc-600 mt-1 uppercase tracking-wider">Cliente desde: {item.createdAt.toDate().toLocaleDateString()}</div>
-                        )}
-                      </TableCell>
-                      <TableCell className="align-middle text-right">
-                        <Button variant="ghost" onClick={() => openWhatsApp(item.telefone, item.nome)} className="h-9 px-3 gap-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all border border-emerald-500/20">
-                          <MessageCircle className="h-4 w-4" /> WhatsApp
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-center align-middle">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDeleteCliente(item.id!)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
+               <div className="min-w-[600px] sm:min-w-0">
+                  <Table>
+                  <TableHeader className="bg-black/40">
+                    <TableRow className="border-white/5 hover:bg-transparent">
+                      <TableHead className="text-zinc-400 font-medium h-12">Perfil do Cliente</TableHead>
+                      <TableHead className="text-zinc-400 font-medium text-right">Comunicação</TableHead>
+                      <TableHead className="text-zinc-400 font-medium w-[80px] text-center">Gestão</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow className="border-white/5"><TableCell colSpan={3} className="h-32 text-center text-zinc-500">Carregando carteira...</TableCell></TableRow>
+                    ) : clientes.length === 0 ? (
+                      <TableRow className="border-white/5"><TableCell colSpan={3} className="h-48 text-center text-zinc-500"><Users className="w-10 h-10 mx-auto mb-3 opacity-20" />Nenhum cliente fixo cadastrado.</TableCell></TableRow>
+                    ) : (
+                      clientes.map((item) => (
+                        <TableRow key={item.id} className="border-white/5 hover:bg-white-[0.02] transition-colors group">
+                          <TableCell className="font-medium align-middle">
+                            <div className="text-white font-semibold">{item.nome}</div>
+                            <div className="text-xs text-zinc-500 font-mono mt-0.5">{item.telefone}</div>
+                            {item.createdAt?.toDate && (
+                               <div className="text-[10px] text-zinc-600 mt-1 uppercase tracking-wider">Cliente desde: {item.createdAt.toDate().toLocaleDateString()}</div>
+                            )}
+                          </TableCell>
+                          <TableCell className="align-middle text-right">
+                            <Button variant="ghost" onClick={() => openWhatsApp(item.telefone, item.nome)} className="h-8 md:h-9 px-2 md:px-3 gap-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all border border-emerald-500/20 text-xs">
+                              <MessageCircle className="h-3 w-3 md:h-4 md:w-4" /> WhatsApp
+                            </Button>
+                          </TableCell>
+                          <TableCell className="text-center align-middle">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDeleteCliente(item.id!)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
       )}
 
       {/* VIEW: HISTÓRICO DE VENDAS */}

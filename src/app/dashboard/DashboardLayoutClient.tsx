@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface SidebarProps {
   pathname: string;
-  user: any;
+  user: { email: string | null; uid: string } | null;
   logout: () => void;
   onLinkClick?: () => void;
 }
@@ -133,7 +133,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
       </motion.aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto relative p-4 md:p-8 lg:p-10">
+      <main className="flex-1 overflow-y-auto relative p-4 md:p-8 lg:p-10 flex flex-col">
         {/* Subtle Background Glow */}
         <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[400px] bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
         <motion.div 
@@ -141,10 +141,25 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative z-10 min-h-full"
+          className="relative z-10 flex-1"
         >
            {children}
         </motion.div>
+
+        {/* Footer Signature */}
+        <footer className="mt-auto pt-10 pb-6 relative z-10 border-t border-white/5 flex flex-col items-center justify-center gap-2">
+          <p className="text-zinc-500 text-[11px] uppercase tracking-[0.2em] font-medium">
+            Desenvolvido por <span className="text-zinc-300 font-bold">A&R Software Development</span>
+          </p>
+          <a 
+            href="https://www.antoniorafael.com.br" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-amber-500/60 hover:text-amber-500 text-[10px] font-mono transition-colors tracking-wider"
+          >
+            www.antoniorafael.com.br
+          </a>
+        </footer>
       </main>
     </div>
   );

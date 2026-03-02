@@ -100,22 +100,22 @@ export default function EstoquePage() {
       transition={{ duration: 0.4 }}
       className="max-w-7xl mx-auto"
     >
-      <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-4xl font-light tracking-tight text-white mb-2">Gestão de <span className="font-semibold text-amber-500">Estoque</span></h1>
-          <p className="text-zinc-400">Controle rigoroso de lotes e volumetria das ampolas de Tirzepatida aprovadas.</p>
+      <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
+        <div className="max-w-full">
+          <h1 className="text-3xl md:text-4xl font-light tracking-tight text-white mb-2">Gestão de <span className="font-semibold text-amber-500">Estoque</span></h1>
+          <p className="text-sm md:text-base text-zinc-400">Controle rigoroso de lotes e volumetria das ampolas de Tirzepatida aprovadas.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-            <Button onClick={exportarEstoqueCSV} variant="outline" className="h-9 text-xs border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300">
+        <div className="flex w-full md:w-auto flex-wrap gap-2">
+            <Button onClick={exportarEstoqueCSV} variant="outline" className="flex-1 md:flex-none h-9 text-xs border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300">
                <Download className="w-3 h-3 mr-2 text-zinc-400" /> CSV
             </Button>
-            <Button onClick={exportarEstoquePDF} variant="outline" className="h-9 text-xs border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500">
+            <Button onClick={exportarEstoquePDF} variant="outline" className="flex-1 md:flex-none h-9 text-xs border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500">
                <Download className="w-3 h-3 mr-2" /> PDF
             </Button>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20">
+                <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20 w-full md:w-auto transition-transform active:scale-95">
                   <Plus className="w-4 h-4 mr-2" /> Entrada
                 </Button>
               </DialogTrigger>
@@ -168,19 +168,20 @@ export default function EstoquePage() {
       </header>
 
       {/* Lista de Ativos */}
-      <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto min-w-full">
-          <Table>
-          <TableHeader className="bg-black/40">
-            <TableRow className="border-white/5 hover:bg-transparent">
-              <TableHead className="text-zinc-400 font-medium h-12">Lote & Marca</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Data de Entrada</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Volumetria</TableHead>
-              <TableHead className="text-zinc-400 font-medium">Situação Físico</TableHead>
-              <TableHead className="text-zinc-400 font-medium text-right">Aquisição / Venda</TableHead>
-              <TableHead className="text-zinc-400 font-medium text-right w-[100px]">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
+      <div className="rounded-xl border border-white/5 bg-zinc-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[800px] xl:min-w-0">
+            <Table>
+            <TableHeader className="bg-black/40">
+              <TableRow className="border-white/5 hover:bg-transparent">
+                <TableHead className="text-zinc-400 font-medium h-12">Lote & Marca</TableHead>
+                <TableHead className="text-zinc-400 font-medium">Data de Entrada</TableHead>
+                <TableHead className="text-zinc-400 font-medium">Volumetria</TableHead>
+                <TableHead className="text-zinc-400 font-medium">Situação Físico</TableHead>
+                <TableHead className="text-zinc-400 font-medium text-right">Aquisição / Venda</TableHead>
+                <TableHead className="text-zinc-400 font-medium text-right w-[100px]">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow className="border-white/5">
@@ -233,9 +234,11 @@ export default function EstoquePage() {
               ))
             )}
           </TableBody>
-        </Table>
-      </div>
-    </div>
-  </motion.div>
-  );
+                </Table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
 }
