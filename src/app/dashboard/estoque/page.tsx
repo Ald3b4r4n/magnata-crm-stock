@@ -15,7 +15,7 @@ export default function EstoquePage() {
   const [estoque, setEstoque] = useState<ProdutoTirzepatida[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<ProdutoTirzepatida>>({ marca: '', volume: '', lote: '', quantidade: 0, valorAquisicao: 0, valorVenda: 0 });
+  const [formData, setFormData] = useState<Partial<ProdutoTirzepatida>>({ marca: '', volume: '', lote: '', quantidade: 0, valorAquisicao: 0, valorVenda: 0, validade: '' });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,7 +41,7 @@ export default function EstoquePage() {
         await addProduto(formData as Omit<ProdutoTirzepatida, 'id'|'createdAt'|'updatedAt'>);
       }
       setIsModalOpen(false);
-      setFormData({ marca: '', volume: '', lote: '', quantidade: 0, valorAquisicao: 0, valorVenda: 0 });
+      setFormData({ marca: '', volume: '', lote: '', quantidade: 0, valorAquisicao: 0, valorVenda: 0, validade: '' });
       // Remover loadData pois o onSnapshot se encarrega
     } catch (err) {
       console.error(err);
@@ -65,12 +65,14 @@ export default function EstoquePage() {
       { header: "Físico Atual", dataKey: "_fisico" },
       { header: "Aquisição UN", dataKey: "_custo" },
       { header: "Venda UN", dataKey: "_venda" },
+      { header: "Validade", dataKey: "_validade" },
       { header: "Entrada em", dataKey: "_data" }
     ], estoque.map(e => ({
       ...e,
       _fisico: `${e.quantidade} disponíveis`,
       _custo: `R$ ${e.valorAquisicao.toFixed(2)}`,
       _venda: `R$ ${e.valorVenda.toFixed(2)}`,
+      _validade: e.validade ? new Date(e.validade).toLocaleDateString('pt-BR') : 'N/A',
       _data: e.createdAt?.toDate ? e.createdAt.toDate().toLocaleDateString('pt-BR') : 'N/A'
     })));
   };
@@ -82,15 +84,33 @@ export default function EstoquePage() {
       { header: "Físico", dataKey: "_fisico" },
       { header: "Entrada em", dataKey: "_data" },
       { header: "Custo (R$)", dataKey: "_custo" },
-      { header: "Venda (R$)", dataKey: "_venda" }
+      { header: "Venda (R$)", dataKey: "_venda" },
+      { header: "Validade", dataKey: "_validade" }
     ], estoque.map(e => ({
       ...e,
       _lote: `${e.lote} (${e.marca})`,
       _fisico: `${e.quantidade} unidades`,
       _custo: `R$ ${e.valorAquisicao.toFixed(2)}`,
       _venda: `R$ ${e.valorVenda.toFixed(2)}`,
+      _validade: e.validade ? new Date(e.validade).toLocaleDateString('pt-BR') : 'N/A',
       _data: e.createdAt?.toDate ? e.createdAt.toDate().toLocaleDateString('pt-BR') : 'N/A'
     })));
+  };
+  
+  const getValidadeStatus = (dateString?: string) => {
+    if (!dateString) return { label: 'Indef.', color: 'text-zinc-500 bg-zinc-500/10 border-zinc-500/20' };
+    
+    // Adicionar T12:00:00 para evitar problemas de fuso horário
+    const validade = new Date(dateString + 'T12:00:00');
+    const hoje = new Date();
+    hoje.setHours(12, 0, 0, 0);
+
+    const diffTime = validade.getTime() - hoje.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { label: 'Vencido', color: 'text-red-500 bg-red-500/10 border-red-500/20' };
+    if (diffDays <= 30) return { label: 'Crítico', color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' };
+    return { label: 'Ok', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' };
   };
 
   return (
@@ -143,6 +163,11 @@ export default function EstoquePage() {
                    <Input required value={formData.lote} onChange={e => setFormData({...formData, lote: e.target.value})} className="bg-zinc-900 border-white/10 uppercase" placeholder="LOTE-123X" />
                  </div>
 
+                 <div className="space-y-2">
+                   <Label className="text-zinc-400">Data de Validade</Label>
+                   <Input required type="date" value={formData.validade} onChange={e => setFormData({...formData, validade: e.target.value})} className="bg-zinc-900 border-white/10 [color-scheme:dark]" />
+                 </div>
+
                  <div className="grid grid-cols-3 gap-4">
                    <div className="space-y-2">
                      <Label className="text-zinc-400">Qtd Ampolas</Label>
@@ -177,6 +202,7 @@ export default function EstoquePage() {
                 <TableHead className="text-zinc-400 font-medium h-12">Lote & Marca</TableHead>
                 <TableHead className="text-zinc-400 font-medium">Data de Entrada</TableHead>
                 <TableHead className="text-zinc-400 font-medium">Volumetria</TableHead>
+                <TableHead className="text-zinc-400 font-medium">Validade</TableHead>
                 <TableHead className="text-zinc-400 font-medium">Situação Físico</TableHead>
                 <TableHead className="text-zinc-400 font-medium text-right">Aquisição / Venda</TableHead>
                 <TableHead className="text-zinc-400 font-medium text-right w-[100px]">Ações</TableHead>
@@ -185,13 +211,13 @@ export default function EstoquePage() {
           <TableBody>
             {loading ? (
               <TableRow className="border-white/5">
-                <TableCell colSpan={6} className="h-32 text-center text-zinc-500">
+                <TableCell colSpan={7} className="h-32 text-center text-zinc-500">
                    Buscando lotes criptografados no cofre remoto...
                 </TableCell>
               </TableRow>
             ) : estoque.length === 0 ? (
               <TableRow className="border-white/5">
-                <TableCell colSpan={6} className="h-48 text-center text-zinc-500">
+                <TableCell colSpan={7} className="h-48 text-center text-zinc-500">
                    <PackageSearch className="w-10 h-10 mx-auto mb-3 opacity-20" />
                    Nenhuma ampola de Tirzepatida cadastrada no momento.
                 </TableCell>
@@ -212,6 +238,21 @@ export default function EstoquePage() {
                     <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
                       {item.volume}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const status = getValidadeStatus(item.validade);
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xs text-zinc-300 font-mono">
+                            {item.validade ? new Date(item.validade + 'T12:00:00').toLocaleDateString('pt-BR') : 'N/A'}
+                          </div>
+                          <Badge variant="outline" className={`text-[10px] px-1 h-4 w-fit font-bold uppercase ${status.color}`}>
+                            {status.label}
+                          </Badge>
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

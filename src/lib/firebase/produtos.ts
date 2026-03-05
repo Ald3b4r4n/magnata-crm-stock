@@ -22,6 +22,7 @@ export interface ProdutoTirzepatida {
   emEstoque: number; // Estoque físico ativo
   valorAquisicao: number;
   valorVenda: number;
+  validade?: string; // YYYY-MM-DD
   createdAt?: any;
   updatedAt?: any;
 }
