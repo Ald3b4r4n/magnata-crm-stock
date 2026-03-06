@@ -468,11 +468,12 @@ export default function ClientesPage() {
                           <option value="Cartão de Crédito">Cartão de Crédito</option>
                           <option value="Cartão de Débito">Cartão de Débito</option>
                           <option value="Transferência">Transferência Bancária</option>
+                          <option value="Crediário">Crediário</option>
                        </select>
                      </div>
                      <div className="space-y-2">
                        <Label className="text-zinc-400">Parcelas</Label>
-                       <select required disabled={formVenda.formaPagamento !== 'Cartão de Crédito'} value={formVenda.parcelas} onChange={e => setFormVenda({...formVenda, parcelas: Number(e.target.value)})} className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-white/10 text-sm focus:ring-amber-500 focus:border-amber-500 disabled:opacity-50">
+                       <select required disabled={formVenda.formaPagamento !== 'Cartão de Crédito' && formVenda.formaPagamento !== 'Crediário'} value={formVenda.parcelas} onChange={e => setFormVenda({...formVenda, parcelas: Number(e.target.value)})} className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-white/10 text-sm focus:ring-amber-500 focus:border-amber-500 disabled:opacity-50">
                           <option value={1}>À vista (1x)</option>
                           <option value={2}>2x</option>
                           <option value={3}>3x</option>

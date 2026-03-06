@@ -6,7 +6,7 @@ import {
 import { ProdutoTirzepatida } from "./produtos";
 
 export type StatusPagamento = 'Pendente' | 'Pago' | 'Atrasado';
-export type FormaPagamento = 'Dinheiro' | 'Pix' | 'Cartão de Crédito' | 'Cartão de Débito' | 'Transferência';
+export type FormaPagamento = 'Dinheiro' | 'Pix' | 'Cartão de Crédito' | 'Cartão de Débito' | 'Transferência' | 'Crediário';
 
 export interface Venda {
   id?: string;
