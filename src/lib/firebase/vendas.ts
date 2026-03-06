@@ -95,6 +95,22 @@ export const updateVendaStatus = async (id: string, statusPagamento: StatusPagam
   });
 };
 
+export const updateVenda = async (id: string, updateData: Partial<Venda>) => {
+  const vendaRef = doc(db, COLLECTION_NAME, id);
+  
+  // Tratamento da data: se vier como string YYYY-MM-DD
+  const payload = { ...updateData };
+  if (updateData.dataCompra && typeof updateData.dataCompra === 'string') {
+    const [ano, mes, dia] = updateData.dataCompra.split('-');
+    payload.dataCompra = new Date(Number(ano), Number(mes) - 1, Number(dia), 12, 0, 0);
+  }
+
+  await updateDoc(vendaRef, {
+    ...payload,
+    updatedAt: serverTimestamp()
+  });
+};
+
 export const updateVendaParcelas = async (id: string, parcelasPagas: number) => {
   const vendaRef = doc(db, COLLECTION_NAME, id);
   await updateDoc(vendaRef, {

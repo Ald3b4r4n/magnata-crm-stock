@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Cliente, subscribeClientes, addCliente, deleteCliente } from "@/lib/firebase/clientes";
-import { Venda, subscribeVendas, addVendaEReduzirEstoque, deleteVendaEVoltarEstoque, updateVendaStatus, updateVendaParcelas, StatusPagamento, FormaPagamento } from "@/lib/firebase/vendas";
+import { Cliente, subscribeClientes, addCliente, deleteCliente, updateCliente } from "@/lib/firebase/clientes";
+import { Venda, subscribeVendas, addVendaEReduzirEstoque, deleteVendaEVoltarEstoque, updateVendaStatus, updateVendaParcelas, updateVenda, StatusPagamento, FormaPagamento } from "@/lib/firebase/vendas";
 import { ProdutoTirzepatida, subscribeEstoque } from "@/lib/firebase/produtos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, Trash2, MessageCircle, ShoppingBag, Download } from "lucide-react";
+import { Plus, Users, Trash2, MessageCircle, ShoppingBag, Download, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { exportToCsv, exportToPdf } from "@/lib/utils/exportFiles";
 
@@ -26,6 +26,11 @@ export default function ClientesPage() {
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [estoque, setEstoque] = useState<ProdutoTirzepatida[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Pagination States
+  const [currentPageClientes, setCurrentPageClientes] = useState(1);
+  const [currentPageVendas, setCurrentPageVendas] = useState(1);
+  const itemsPerPage = 10;
 
   // Modal States
   const [isModalClienteOpen, setIsModalClienteOpen] = useState(false);
@@ -60,13 +65,27 @@ export default function ClientesPage() {
     setIsSubmitting(true);
     try {
       if (!formCliente.nome || !formCliente.telefone) return alert('Preencha os campos obrigatórios');
-      await addCliente(formCliente as Omit<Cliente, 'id'>);
+      if (formCliente.id) {
+        await updateCliente(formCliente.id, formCliente);
+      } else {
+        await addCliente(formCliente as Omit<Cliente, 'id'>);
+      }
       setIsModalClienteOpen(false);
       setFormCliente({ nome: '', telefone: '' });
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar o cliente");
     } finally { setIsSubmitting(false); }
+  };
+
+  const handleEditCliente = (c: Cliente) => {
+    setFormCliente(c);
+    setIsModalClienteOpen(true);
+  };
+
+  const handleAddClienteClick = () => {
+    setFormCliente({ nome: '', telefone: '' });
+    setIsModalClienteOpen(true);
   };
 
   const handleDeleteCliente = async (id: string) => {
@@ -86,30 +105,42 @@ export default function ClientesPage() {
     e.preventDefault();
     if (isSubmitting) return;
 
-    if (!formVenda.clienteId || !formVenda.produtoId) return alert('Selecione um cliente e um produto válido.');
+    if (!formVenda.clienteId) return alert('Selecione um cliente válido.');
 
     setIsSubmitting(true);
     try {
-      const clienteFound = clientes.find(c => c.id === formVenda.clienteId);
-      const produtoFound = estoque.find(p => p.id === formVenda.produtoId);
+      if (formVenda.id) {
+        await updateVenda(formVenda.id, {
+          clienteId: formVenda.clienteId,
+          valorTotal: formVenda.valorTotal,
+          formaPagamento: formVenda.formaPagamento,
+          parcelas: formVenda.parcelas,
+          statusPagamento: formVenda.statusPagamento,
+          dataCompra: formVenda.dataCompra
+        });
+      } else {
+        if (!formVenda.produtoId) throw new Error("Selecione um produto");
+        const clienteFound = clientes.find(c => c.id === formVenda.clienteId);
+        const produtoFound = estoque.find(p => p.id === formVenda.produtoId);
 
-      if(!clienteFound || !produtoFound) throw new Error("Referência de DB Inválida.");
+        if(!clienteFound || !produtoFound) throw new Error("Referência de DB Inválida.");
 
-      await addVendaEReduzirEstoque({
-        clienteId: clienteFound.id!,
-        clienteNome: clienteFound.nome,
-        produtoId: produtoFound.id!,
-        loteComprado: produtoFound.lote,
-        volume: produtoFound.volume,
-        quantidade: formVenda.quantidade || 1,
-        valorTotal: formVenda.valorTotal || 0,
-        valorAquisicaoUnidade: produtoFound.valorAquisicao,
-        formaPagamento: formVenda.formaPagamento as FormaPagamento,
-        parcelas: formVenda.parcelas || 1,
-        parcelasPagas: formVenda.parcelasPagas || 0,
-        statusPagamento: formVenda.statusPagamento as StatusPagamento,
-        dataCompra: formVenda.dataCompra
-      });
+        await addVendaEReduzirEstoque({
+          clienteId: clienteFound.id!,
+          clienteNome: clienteFound.nome,
+          produtoId: produtoFound.id!,
+          loteComprado: produtoFound.lote,
+          volume: produtoFound.volume,
+          quantidade: formVenda.quantidade || 1,
+          valorTotal: formVenda.valorTotal || 0,
+          valorAquisicaoUnidade: produtoFound.valorAquisicao,
+          formaPagamento: formVenda.formaPagamento as FormaPagamento,
+          parcelas: formVenda.parcelas || 1,
+          parcelasPagas: formVenda.parcelasPagas || 0,
+          statusPagamento: formVenda.statusPagamento as StatusPagamento,
+          dataCompra: formVenda.dataCompra
+        });
+      }
 
       setIsModalVendaOpen(false);
       setFormVenda({ clienteId: '', produtoId: '', quantidade: 1, valorTotal: 0, statusPagamento: 'Pendente', formaPagamento: 'Dinheiro', parcelas: 1, parcelasPagas: 0, dataCompra: getHojeLocal() });
@@ -118,9 +149,22 @@ export default function ClientesPage() {
       if (err instanceof Error) {
         alert(err.message);
       } else {
-        alert("Erro ao registrar venda e baixar estoque");
+        alert("Erro ao registrar/editar venda.");
       }
     } finally { setIsSubmitting(false); }
+  };
+
+  const handleEditVenda = (v: Venda) => {
+    setFormVenda({
+      ...v,
+      dataCompra: v.dataCompra?.toDate ? new Date(v.dataCompra.toDate().getTime() + Math.abs(v.dataCompra.toDate().getTimezoneOffset() * 60000)).toISOString().split('T')[0] : getHojeLocal()
+    });
+    setIsModalVendaOpen(true);
+  };
+
+  const handleAddVendaClick = () => {
+    setFormVenda({ clienteId: '', produtoId: '', quantidade: 1, valorTotal: 0, statusPagamento: 'Pendente', formaPagamento: 'Dinheiro', parcelas: 1, parcelasPagas: 0, dataCompra: getHojeLocal() });
+    setIsModalVendaOpen(true);
   };
 
   const handleDeleteVenda = async (venda: Venda) => {
@@ -202,6 +246,12 @@ export default function ClientesPage() {
     })));
   };
 
+  const paginatedClientes = clientes.slice((currentPageClientes - 1) * itemsPerPage, currentPageClientes * itemsPerPage);
+  const totalPagesClientes = Math.ceil(clientes.length / itemsPerPage);
+
+  const paginatedVendas = vendas.slice((currentPageVendas - 1) * itemsPerPage, currentPageVendas * itemsPerPage);
+  const totalPagesVendas = Math.ceil(vendas.length / itemsPerPage);
+
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="max-w-7xl mx-auto">
       <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
@@ -239,16 +289,16 @@ export default function ClientesPage() {
                </Button>
             </div>
             
-            <Dialog open={isModalClienteOpen} onOpenChange={setIsModalClienteOpen}>
+             <Dialog open={isModalClienteOpen} onOpenChange={setIsModalClienteOpen}>
                <DialogTrigger asChild>
-                 <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20 w-full sm:w-auto">
+                 <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20 w-full sm:w-auto" onClick={handleAddClienteClick}>
                    <Plus className="w-4 h-4 mr-2" /> Cadastrar Cliente
                  </Button>
                </DialogTrigger>
                <DialogContent className="bg-zinc-950 border-white/10 text-white sm:max-w-[425px]">
                  <DialogHeader>
-                   <DialogTitle>Novo Cadastro de Cliente</DialogTitle>
-                   <DialogDescription>Crie um registro de contato para a carteira de clientes fixos.</DialogDescription>
+                   <DialogTitle>{formCliente.id ? "Editar Cliente" : "Novo Cadastro de Cliente"}</DialogTitle>
+                   <DialogDescription>{formCliente.id ? "Altere as informações deste cliente." : "Crie um registro de contato para a carteira de clientes fixos."}</DialogDescription>
                  </DialogHeader>
                  <form onSubmit={handleSaveCliente} className="space-y-4 mt-4">
                    <div className="space-y-2">
@@ -281,10 +331,10 @@ export default function ClientesPage() {
                   <TableBody>
                     {loading ? (
                       <TableRow className="border-white/5"><TableCell colSpan={3} className="h-32 text-center text-zinc-500">Carregando carteira...</TableCell></TableRow>
-                    ) : clientes.length === 0 ? (
+                    ) : paginatedClientes.length === 0 ? (
                       <TableRow className="border-white/5"><TableCell colSpan={3} className="h-48 text-center text-zinc-500"><Users className="w-10 h-10 mx-auto mb-3 opacity-20" />Nenhum cliente fixo cadastrado.</TableCell></TableRow>
                     ) : (
-                      clientes.map((item) => (
+                      paginatedClientes.map((item) => (
                         <TableRow key={item.id} className="border-white/5 hover:bg-white-[0.02] transition-colors group">
                           <TableCell className="font-medium align-middle">
                             <div className="text-white font-semibold">{item.nome}</div>
@@ -299,9 +349,14 @@ export default function ClientesPage() {
                             </Button>
                           </TableCell>
                           <TableCell className="text-center align-middle">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDeleteCliente(item.id!)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex justify-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-amber-400 hover:bg-amber-400/10" onClick={() => handleEditCliente(item)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDeleteCliente(item.id!)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -311,6 +366,18 @@ export default function ClientesPage() {
               </div>
             </div>
           </div>
+          {/* Client Pagination Controls */}
+          {totalPagesClientes > 1 && (
+            <div className="flex items-center justify-between mt-4 gap-2 bg-zinc-900/30 p-2 rounded-lg border border-white/5">
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPageClientes(p => Math.max(1, p - 1))} disabled={currentPageClientes === 1} className="text-zinc-400 hover:text-white">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
+              </Button>
+              <div className="text-xs text-zinc-500 font-medium">Página {currentPageClientes} de {totalPagesClientes}</div>
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPageClientes(p => Math.max(1, Math.min(totalPagesClientes, p + 1)))} disabled={currentPageClientes === totalPagesClientes} className="text-zinc-400 hover:text-white">
+                Próxima <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -329,43 +396,50 @@ export default function ClientesPage() {
 
             <Dialog open={isModalVendaOpen} onOpenChange={setIsModalVendaOpen}>
                <DialogTrigger asChild>
-                 <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20">
+                 <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20" onClick={handleAddVendaClick}>
                    <Plus className="w-4 h-4 mr-2" /> Registrar Venda & Baixar Estoque
                  </Button>
                </DialogTrigger>
                <DialogContent className="bg-zinc-950 border-white/10 text-white sm:max-w-[425px]">
                  <DialogHeader>
-                   <DialogTitle>Registrar Venda e Ocorrência</DialogTitle>
-                   <DialogDescription>Abater do estoque registrando a compra na conta de um cliente.</DialogDescription>
+                   <DialogTitle>{formVenda.id ? "Editar Venda" : "Registrar Venda e Ocorrência"}</DialogTitle>
+                   <DialogDescription>{formVenda.id ? "Edite as condições ou status de uma venda registrada." : "Abater do estoque registrando a compra na conta de um cliente."}</DialogDescription>
                  </DialogHeader>
                  <form onSubmit={handleSaveVenda} className="space-y-4 mt-4">
                    
                    <div className="space-y-2">
                      <Label className="text-zinc-400">Selecione o Cliente</Label>
-                     <select required value={formVenda.clienteId} onChange={e => setFormVenda({...formVenda, clienteId: e.target.value})} className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-white/10 text-sm focus:ring-amber-500 focus:border-amber-500">
+                     <select disabled={!!formVenda.id} required value={formVenda.clienteId} onChange={e => setFormVenda({...formVenda, clienteId: e.target.value})} className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-white/10 text-sm focus:ring-amber-500 focus:border-amber-500 disabled:opacity-50">
                         <option value="" disabled>-- Selecione --</option>
                         {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                      </select>
                    </div>
                    
-                   <div className="space-y-2">
-                     <Label className="text-zinc-400">Selecione o Item do Estoque (Baixa)</Label>
-                     <select required value={formVenda.produtoId} onChange={e => {
-                         const p = estoque.find(x => x.id === e.target.value);
-                         const qtd = formVenda.quantidade || 1;
-                         setFormVenda({...formVenda, produtoId: e.target.value, valorTotal: p ? p.valorVenda * qtd : 0});
-                       }} className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-white/10 text-sm focus:ring-amber-500 focus:border-amber-500">
-                        <option value="" disabled>-- Selecione Lote Ativo --</option>
-                        {estoque.filter(e => e.emEstoque > 0).map(p => (
-                          <option key={p.id} value={p.id}>({p.lote}) {p.marca} {p.volume} - {p.emEstoque} un. rastreadas</option>
-                        ))}
-                     </select>
-                   </div>
+                   {!formVenda.id ? (
+                     <div className="space-y-2">
+                       <Label className="text-zinc-400">Selecione o Item do Estoque (Baixa)</Label>
+                       <select required value={formVenda.produtoId} onChange={e => {
+                           const p = estoque.find(x => x.id === e.target.value);
+                           const qtd = formVenda.quantidade || 1;
+                           setFormVenda({...formVenda, produtoId: e.target.value, valorTotal: p ? p.valorVenda * qtd : 0});
+                         }} className="w-full h-10 px-3 rounded-md bg-zinc-900 border border-white/10 text-sm focus:ring-amber-500 focus:border-amber-500">
+                          <option value="" disabled>-- Selecione Lote Ativo --</option>
+                          {estoque.filter(e => e.emEstoque > 0).map(p => (
+                            <option key={p.id} value={p.id}>({p.lote}) {p.marca} {p.volume} - {p.emEstoque} un. rastreadas</option>
+                          ))}
+                       </select>
+                     </div>
+                   ) : (
+                     <div className="space-y-2">
+                       <Label className="text-zinc-400">Item Vendido</Label>
+                       <Input disabled value={`(${formVenda.loteComprado}) ${formVenda.volume}`} className="bg-zinc-900 border-white/10 text-zinc-500" />
+                     </div>
+                   )}
 
                    <div className="grid grid-cols-3 gap-4">
                      <div className="space-y-2">
                        <Label className="text-zinc-400">Qtd Comprada</Label>
-                       <Input required type="number" min={1} value={formVenda.quantidade || ''} onChange={e => {
+                       <Input disabled={!!formVenda.id} required type="number" min={1} value={formVenda.quantidade || ''} onChange={e => {
                          const novaQtd = Number(e.target.value);
                          const p = estoque.find(x => x.id === formVenda.produtoId);
                          setFormVenda(prev => ({
@@ -373,7 +447,7 @@ export default function ClientesPage() {
                            quantidade: novaQtd, 
                            valorTotal: p ? p.valorVenda * novaQtd : prev.valorTotal
                          }));
-                       }} className="bg-zinc-900 border-white/10" />
+                       }} className="bg-zinc-900 border-white/10 disabled:opacity-50" />
                      </div>
                      <div className="space-y-2">
                        <Label className="text-zinc-400">Total Venda (R$)</Label>
@@ -442,10 +516,10 @@ export default function ClientesPage() {
               <TableBody>
                 {loading ? (
                   <TableRow className="border-white/5"><TableCell colSpan={4} className="h-32 text-center text-zinc-500">Sincronizando histórico de vendas...</TableCell></TableRow>
-                ) : vendas.length === 0 ? (
+                ) : paginatedVendas.length === 0 ? (
                   <TableRow className="border-white/5"><TableCell colSpan={4} className="h-48 text-center text-zinc-500"><ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-20" />O histórico do BI está sem faturamentos.</TableCell></TableRow>
                 ) : (
-                  vendas.map((item) => (
+                  paginatedVendas.map((item) => (
                     <TableRow key={item.id} className="border-white/5 hover:bg-white-[0.02] transition-colors group">
                       <TableCell className="font-medium align-middle">
                         <div className="text-white font-semibold">{item.clienteNome}</div>
@@ -501,9 +575,14 @@ export default function ClientesPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right align-middle">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDeleteVenda(item)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-amber-400 hover:bg-amber-400/10" onClick={() => handleEditVenda(item)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDeleteVenda(item)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -512,6 +591,18 @@ export default function ClientesPage() {
             </Table>
           </div>
         </div>
+        {/* Sales Pagination Controls */}
+        {totalPagesVendas > 1 && (
+          <div className="flex items-center justify-between mt-4 gap-2 bg-zinc-900/30 p-2 rounded-lg border border-white/5">
+            <Button variant="ghost" size="sm" onClick={() => setCurrentPageVendas(p => Math.max(1, p - 1))} disabled={currentPageVendas === 1} className="text-zinc-400 hover:text-white">
+              <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
+            </Button>
+            <div className="text-xs text-zinc-500 font-medium">Página {currentPageVendas} de {totalPagesVendas}</div>
+            <Button variant="ghost" size="sm" onClick={() => setCurrentPageVendas(p => Math.max(1, Math.min(totalPagesVendas, p + 1)))} disabled={currentPageVendas === totalPagesVendas} className="text-zinc-400 hover:text-white">
+              Próxima <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
       </motion.div>
       )}
     </motion.div>

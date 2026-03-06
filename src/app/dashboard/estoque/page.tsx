@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, PackageSearch, Trash2, Download } from "lucide-react";
+import { Plus, PackageSearch, Trash2, Download, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { exportToCsv, exportToPdf } from "@/lib/utils/exportFiles";
 
@@ -16,6 +16,9 @@ export default function EstoquePage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<ProdutoTirzepatida>>({ marca: '', volume: '', lote: '', quantidade: 0, valorAquisicao: 0, valorVenda: 0, validade: '' });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,7 +38,7 @@ export default function EstoquePage() {
 
     try {
       if (formData.id) {
-        // Edit mode (not fully implemented in UI but logic is here)
+        // Travar a quantidade para não mexer no controle de estoque aqui (só permite editar preco, validade, lote string)
         await updateProduto(formData.id, formData);
       } else {
         await addProduto(formData as Omit<ProdutoTirzepatida, 'id'|'createdAt'|'updatedAt'>);
@@ -49,6 +52,16 @@ export default function EstoquePage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEdit = (p: ProdutoTirzepatida) => {
+    setFormData(p);
+    setIsModalOpen(true);
+  };
+
+  const handleAddClick = () => {
+    setFormData({ marca: '', volume: '', lote: '', quantidade: 0, valorAquisicao: 0, valorVenda: 0, validade: '' });
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -113,6 +126,9 @@ export default function EstoquePage() {
     return { label: 'Ok', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' };
   };
 
+  const paginatedEstoque = estoque.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(estoque.length / itemsPerPage);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
@@ -135,15 +151,15 @@ export default function EstoquePage() {
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20 w-full md:w-auto transition-transform active:scale-95">
+                <Button className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20 w-full md:w-auto transition-transform active:scale-95" onClick={handleAddClick}>
                   <Plus className="w-4 h-4 mr-2" /> Entrada
                 </Button>
               </DialogTrigger>
              <DialogContent className="bg-zinc-950 border-white/10 text-white sm:max-w-[425px]">
                <DialogHeader>
-                 <DialogTitle>Registrar Lote de Tirzepatida</DialogTitle>
+                 <DialogTitle>{formData.id ? "Editar Lote de Tirzepatida" : "Registrar Lote de Tirzepatida"}</DialogTitle>
                  <DialogDescription>
-                   Insira os dados da nova compra de estoque para acompanhamento no sistema.
+                   {formData.id ? "Modifique as informações de registro (quantidade total e validação bloqueadas para segurança do BI)." : "Insira os dados da nova compra de estoque para acompanhamento no sistema."}
                  </DialogDescription>
                </DialogHeader>
                <form onSubmit={handleSave} className="space-y-4 mt-4">
@@ -171,7 +187,7 @@ export default function EstoquePage() {
                  <div className="grid grid-cols-3 gap-4">
                    <div className="space-y-2">
                      <Label className="text-zinc-400">Qtd Ampolas</Label>
-                     <Input required type="number" min={1} value={formData.quantidade || ''} onChange={e => setFormData({...formData, quantidade: Number(e.target.value)})} className="bg-zinc-900 border-white/10" />
+                     <Input disabled={!!formData.id} required type="number" min={1} value={formData.quantidade || ''} onChange={e => setFormData({...formData, quantidade: Number(e.target.value)})} className="bg-zinc-900 border-white/10 disabled:opacity-50" />
                    </div>
                    <div className="space-y-2">
                      <Label className="text-zinc-400">Custo UN (R$)</Label>
@@ -215,7 +231,7 @@ export default function EstoquePage() {
                    Buscando lotes criptografados no cofre remoto...
                 </TableCell>
               </TableRow>
-            ) : estoque.length === 0 ? (
+            ) : paginatedEstoque.length === 0 ? (
               <TableRow className="border-white/5">
                 <TableCell colSpan={7} className="h-48 text-center text-zinc-500">
                    <PackageSearch className="w-10 h-10 mx-auto mb-3 opacity-20" />
@@ -223,7 +239,7 @@ export default function EstoquePage() {
                 </TableCell>
               </TableRow>
             ) : (
-              estoque.map((item) => (
+              paginatedEstoque.map((item) => (
                 <TableRow key={item.id} className="border-white/5 hover:bg-white-[0.02] transition-colors group">
                   <TableCell className="font-medium">
                     <div className="text-white">{item.marca}</div>
@@ -267,9 +283,14 @@ export default function EstoquePage() {
                     <div className="text-emerald-500/80 text-[11px] font-medium uppercase tracking-wider">Venda UN: <span className="text-emerald-400 font-bold normal-case tracking-normal">R$ {item.valorVenda.toFixed(2)}</span></div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDelete(item.id!)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-amber-400 hover:bg-amber-400/10" onClick={() => handleEdit(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-400 hover:bg-red-400/10" onClick={() => handleDelete(item.id!)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -278,6 +299,18 @@ export default function EstoquePage() {
         </Table>
       </div>
     </div>
+    {/* Pagination */}
+    {totalPages > 1 && (
+      <div className="flex items-center justify-between mt-4 gap-2 bg-zinc-900/30 p-2 rounded-lg border border-white/5">
+        <Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="text-zinc-400 hover:text-white">
+          <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
+        </Button>
+        <div className="text-xs text-zinc-500 font-medium">Página {currentPage} de {totalPages}</div>
+        <Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => Math.max(1, Math.min(totalPages, p + 1)))} disabled={currentPage === totalPages} className="text-zinc-400 hover:text-white">
+          Próxima <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
+      </div>
+    )}
   </div>
 </motion.div>
   );
